@@ -1,3 +1,8 @@
+/*
+ * FDPClient Hacked Client
+ * A free open source mixin-based injection hacked client for Minecraft using Minecraft Forge by LiquidBounce.
+ * https://github.com/SkidderMC/FDPClient/
+ */
 package net.ccbluex.liquidbounce.features.module.modules.combat.velocitys
 
 import net.ccbluex.liquidbounce.FDPClient
@@ -31,4 +36,5 @@ abstract class VelocityMode(val modeName: String) : MinecraftInstance() {
     open fun onJump(event: JumpEvent) {}
     open fun onStep(event: StepEvent) {}
     open fun onStrafe(event: StrafeEvent) {}
+    open fun onTick(event: TickEvent) {}
 }
