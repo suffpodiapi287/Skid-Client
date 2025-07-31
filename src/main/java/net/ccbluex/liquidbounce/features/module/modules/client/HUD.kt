@@ -79,7 +79,7 @@ object HUD : Module("HUD", category = ModuleCategory.CLIENT, array = false, defa
         )
         width += mc.fontRendererObj.getStringWidth("FDP")
         mc.fontRendererObj.drawStringWithShadow(
-            "CLIENT",
+            "CLIENT+++",
             width.toFloat(),
             3.0f,
             colors?.get(1)?.rgb ?: rainbow().rgb
