@@ -31,6 +31,7 @@ import net.minecraft.world.World
 import net.minecraft.world.chunk.Chunk
 import javax.vecmath.Vector3d
 import kotlin.math.*
+import net.minecraft.client.entity.EntityPlayerSP
 
 /**
  * Allows to get the distance between the current entity and [entity] from the nearest corner of the bounding box
@@ -136,4 +137,15 @@ fun World.getEntitiesInRadius(entity: Entity, radius: Double = 16.0): List<Entit
                 .forEach { it.getEntitiesWithinAABBForEntity(entity, box, entities, null) }
     }
     return entities
+}
+
+fun EntityPlayerSP.rayTraceWithPlayer(reach: Double): MovingObjectPosition? {
+    val eyePos = this.getPositionEyes(1.0f)
+    val lookVec = this.getLook(1.0f)
+    val reachVec = eyePos.addVector(
+        lookVec.xCoord * reach,
+        lookVec.yCoord * reach,
+        lookVec.zCoord * reach
+    )
+    return mc.theWorld.rayTraceBlocks(eyePos, reachVec)
 }
