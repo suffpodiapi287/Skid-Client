@@ -22,6 +22,7 @@ import net.ccbluex.liquidbounce.ui.client.gui.clickgui.style.styles.newVer.NewUi
 import net.ccbluex.liquidbounce.ui.client.gui.clickgui.style.styles.novoline.ClickyUI
 import net.ccbluex.liquidbounce.ui.client.gui.clickgui.style.styles.onetap.OtcClickGUi
 import net.ccbluex.liquidbounce.ui.client.gui.clickgui.style.styles.tenacity.TenacityClickGUI
+import net.ccbluex.liquidbounce.ui.client.gui.clickgui.style.styles.augustus.AugustusClickGUI
 import net.ccbluex.liquidbounce.ui.client.gui.options.modernuiLaunchOption
 import net.ccbluex.liquidbounce.utils.render.ColorUtils.rainbow
 import net.minecraft.network.play.server.S2EPacketCloseWindow
@@ -48,7 +49,8 @@ object ClickGUIModule : Module(name = "ClickGUI", category = ModuleCategory.CLIE
             "Null",
             "Slowly",
             "Black",
-            "White"
+            "White",
+            "Augustus"
         ),
         "Black"
     ) {
@@ -91,6 +93,7 @@ object ClickGUIModule : Module(name = "ClickGUI", category = ModuleCategory.CLIE
             styleValue.get().equals("LB+", ignoreCase = true) -> mc.displayGuiScreen(NewUi.getInstance())
             styleValue.get().equals("Bjur", ignoreCase = true) -> mc.displayGuiScreen(bjur)
             styleValue.get().contains("Slight") -> mc.displayGuiScreen(slight)
+            styleValue.get().equals("Augustus", ignoreCase = true) -> mc.displayGuiScreen(AugustusClickGUI())
             else -> {
                 updateStyle()
                 mc.displayGuiScreen(modernuiLaunchOption.clickGui)
@@ -107,6 +110,7 @@ object ClickGUIModule : Module(name = "ClickGUI", category = ModuleCategory.CLIE
             "jello" -> modernuiLaunchOption.clickGui.style = JelloStyle()
             "tenacity5" -> modernuiLaunchOption.clickGui.style = TenacityStyle()
             "astolfo" -> modernuiLaunchOption.clickGui.style = AstolfoStyle()
+            "augustus" -> modernuiLaunchOption.clickGui.style = AugustusStyle()
         }
     }
 

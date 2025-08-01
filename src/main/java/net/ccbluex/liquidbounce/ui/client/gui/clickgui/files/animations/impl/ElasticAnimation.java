@@ -1,15 +1,13 @@
 /*
- * FDPClient Hacked Client
- * A free open source mixin-based injection hacked client for Minecraft using Minecraft Forge by LiquidBounce.
- * https://github.com/SkidderMC/FDPClient/
+ * Decompiled with CFR 0.152.
  */
 package net.ccbluex.liquidbounce.ui.client.gui.clickgui.files.animations.impl;
 
 import net.ccbluex.liquidbounce.ui.client.gui.clickgui.files.animations.Animation;
 import net.ccbluex.liquidbounce.ui.client.gui.clickgui.files.animations.Direction;
 
-public class ElasticAnimation extends Animation {
-
+public class ElasticAnimation
+extends Animation {
     final float easeAmount;
     final float smooth;
     final boolean reallyElastic;
@@ -30,8 +28,9 @@ public class ElasticAnimation extends Animation {
 
     @Override
     protected double getEquation(double x) {
-        double x1 = Math.pow(x / duration, smooth); //Used to force input to range from 0 - 1
-        double elasticity = easeAmount * .1f;
-        return Math.pow(2, -10 * (reallyElastic ? Math.sqrt(x1) : x1)) * Math.sin((x1 - (elasticity / 4)) * ((2 * Math.PI) / elasticity)) + 1;
+        double x1 = Math.pow(x / (double)this.duration, this.smooth);
+        double elasticity = this.easeAmount * 0.1f;
+        return Math.pow(2.0, -10.0 * (this.reallyElastic ? Math.sqrt(x1) : x1)) * Math.sin((x1 - elasticity / 4.0) * (Math.PI * 2 / elasticity)) + 1.0;
     }
 }
+

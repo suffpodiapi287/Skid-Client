@@ -1,15 +1,13 @@
 /*
- * FDPClient Hacked Client
- * A free open source mixin-based injection hacked client for Minecraft using Minecraft Forge by LiquidBounce.
- * https://github.com/SkidderMC/FDPClient/
+ * Decompiled with CFR 0.152.
  */
 package net.ccbluex.liquidbounce.ui.client.gui.clickgui.files.animations.impl;
 
 import net.ccbluex.liquidbounce.ui.client.gui.clickgui.files.animations.Animation;
 import net.ccbluex.liquidbounce.ui.client.gui.clickgui.files.animations.Direction;
 
-public class DecelerateAnimation extends Animation {
-
+public class DecelerateAnimation
+extends Animation {
     public DecelerateAnimation(int ms, double endPoint) {
         super(ms, endPoint);
     }
@@ -18,8 +16,10 @@ public class DecelerateAnimation extends Animation {
         super(ms, endPoint, direction);
     }
 
+    @Override
     protected double getEquation(double x) {
-        double x1 = x / duration;
-        return 1 - ((x1 - 1) * (x1 - 1));
+        double x1 = x / (double)this.duration;
+        return 1.0 - (x1 - 1.0) * (x1 - 1.0);
     }
 }
+
