@@ -18,7 +18,7 @@ import java.time.OffsetDateTime
 import kotlin.concurrent.thread
 
 object DiscordRPC {
-    private val ipcClient = IPCClient(1021236965108109333)
+    private val ipcClient = IPCClient(1400473578188705822)
     private val timestamp = OffsetDateTime.now()
     private var running = false
     private var fdpwebsite = "fdpinfo.github.io - "
@@ -42,30 +42,55 @@ object DiscordRPC {
                 running = false
             }
         })
+
         try {
             ipcClient.connect()
         } catch (e: Exception) {
-            ClientUtils.logError("DiscordRPC failed to start")
+            ClientUtils.logError("DiscordRPC failed to start: ${e.message}")
         } catch (e: RuntimeException) {
-            ClientUtils.logError("DiscordRPC failed to start")
+            ClientUtils.logError("DiscordRPC failed to start: ${e.message}")
         }
     }
 
     private fun update() {
+    try {
         val builder = RichPresence.Builder()
         val discordRPCModule = FDPClient.moduleManager[DiscordRPCModule::class.java]!!
         builder.setStartTimestamp(timestamp)
-        builder.setLargeImage(if (discordRPCModule.animated.get()){"https://skiddermc.github.io/repo/skiddermc/FDPclient/dcrpc/fdp.gif"} else {"https://skiddermc.github.io/repo/skiddermc/FDPclient/dcrpc/fdp.png"})
-        builder.setDetails(fdpwebsite + FDPClient.CLIENT_VERSION)
+        builder.setLargeImage("fdpclient_", "FDPClient+++ v1.0.0")
+        builder.setDetails("FDPClient+++ v1.0.0")
+
         ServerUtils.getRemoteIp().also {
-            val str = (if(discordRPCModule.showServerValue.get()) "Server: $it\n" else "\n") + (if(discordRPCModule.showNameValue.get()) "IGN: ${if(mc.thePlayer != null) mc.thePlayer.name else mc.session.username}\n" else "\n") + (if(discordRPCModule.showHealthValue.get()) "HP: ${mc.thePlayer.health}\n" else "\n") + (if(discordRPCModule.showModuleValue.get()) "Enable: ${FDPClient.moduleManager.modules.count{ it.state }} of ${FDPClient.moduleManager.modules.size} Modules\n" else "\n") + (if(discordRPCModule.showOtherValue.get()) "Time: ${if(mc.isSingleplayer) "SinglePlayer\n" else SessionUtils.getFormatSessionTime()} Kills: ${StatisticsUtils.getKills()} Deaths: ${StatisticsUtils.getDeaths()}\n" else "\n")
-            builder.setState(if(it.equals("Injecting", true)) "Injecting" else str)
+            val str = buildString {
+                if (discordRPCModule.showServerValue.get())
+                    append("Server: $it\n")
+                if (discordRPCModule.showNameValue.get())
+                    append("IGN: ${mc.thePlayer?.name ?: mc.session.username}\n")
+                if (discordRPCModule.showHealthValue.get())
+                    append("HP: ${mc.thePlayer?.health?.toInt() ?: "N/A"}\n")
+                if (discordRPCModule.showModuleValue.get()) {
+                    val enabled = FDPClient.moduleManager.modules.count { it.state }
+                    val total = FDPClient.moduleManager.modules.size
+                    append("Enable: $enabled of $total Modules\n")
+                }
+                if (discordRPCModule.showOtherValue.get()) {
+                    val time = if (mc.isSingleplayer) "SinglePlayer" else SessionUtils.getFormatSessionTime()
+                    append("Time: $time\n")
+                }
+            }
+
+            builder.setState(
+                if (it.equals("Injecting", true)) "Injecting" else str.trim()
+            )
         }
 
-        // Check ipc client is connected and send rpc
-        if (ipcClient?.status == PipeStatus.CONNECTED)
-            ipcClient?.sendRichPresence(builder.build())
+        if (ipcClient.status == PipeStatus.CONNECTED)
+            ipcClient.sendRichPresence(builder.build())
+        
+    } catch (e: Exception) {
+        ClientUtils.logError("DiscordRPC update failed: ${e.message}")
     }
+}
 
     fun stop() {
         if (ipcClient.status == PipeStatus.CONNECTED) ipcClient.close()
