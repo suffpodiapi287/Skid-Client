@@ -2726,4 +2726,51 @@ public final class RenderUtils extends MinecraftInstance {
         GlStateManager.disableBlend();
     }
 
+public static void drawSmoothRoundedRect(float x, float y, float right, float bottom, float radius, int color) {
+    float r = (color >> 16 & 0xFF) / 255.0f;
+    float g = (color >> 8 & 0xFF) / 255.0f;
+    float b = (color & 0xFF) / 255.0f;
+    float a = (color >> 24 & 0xFF) / 255.0f;
+
+    int segments = 20;
+
+    GL11.glPushAttrib(GL11.GL_ALL_ATTRIB_BITS);
+    GL11.glEnable(GL11.GL_BLEND);
+    GL11.glDisable(GL11.GL_TEXTURE_2D);
+    GL11.glEnable(GL11.GL_LINE_SMOOTH);
+    GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
+    GL11.glColor4f(r, g, b, a);
+
+    GL11.glBegin(GL11.GL_POLYGON);
+
+    // Top-left corner
+    for (int i = 0; i <= segments; i++) {
+        double theta = Math.PI / 2 * i / segments;
+        GL11.glVertex2d(x + radius - Math.cos(theta) * radius, y + radius - Math.sin(theta) * radius);
+    }
+
+    // Bottom-left corner
+    for (int i = 0; i <= segments; i++) {
+        double theta = Math.PI / 2 * i / segments + Math.PI / 2;
+        GL11.glVertex2d(x + radius - Math.cos(theta) * radius, bottom - radius - Math.sin(theta) * radius);
+    }
+
+    // Bottom-right corner
+    for (int i = 0; i <= segments; i++) {
+        double theta = Math.PI / 2 * i / segments + Math.PI;
+        GL11.glVertex2d(right - radius - Math.cos(theta) * radius, bottom - radius - Math.sin(theta) * radius);
+    }
+
+    // Top-right corner
+    for (int i = 0; i <= segments; i++) {
+        double theta = Math.PI / 2 * i / segments + 3 * Math.PI / 2;
+        GL11.glVertex2d(right - radius - Math.cos(theta) * radius, y + radius - Math.sin(theta) * radius);
+    }
+
+    GL11.glEnd();
+
+    GL11.glEnable(GL11.GL_TEXTURE_2D);
+    GL11.glDisable(GL11.GL_BLEND);
+    GL11.glPopAttrib();
+}
 }
