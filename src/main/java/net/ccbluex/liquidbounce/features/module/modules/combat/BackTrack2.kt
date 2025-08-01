@@ -3,150 +3,100 @@ package net.ccbluex.liquidbounce.features.module.modules.combat
 import net.ccbluex.liquidbounce.event.EventTarget
 import net.ccbluex.liquidbounce.event.PacketEvent
 import net.ccbluex.liquidbounce.event.Render3DEvent
+import net.ccbluex.liquidbounce.event.UpdateEvent
 import net.ccbluex.liquidbounce.features.module.Module
 import net.ccbluex.liquidbounce.features.module.ModuleCategory
-import net.ccbluex.liquidbounce.features.value.BoolValue
-import net.ccbluex.liquidbounce.features.value.IntegerValue
-import net.ccbluex.liquidbounce.features.value.ListValue
-import net.minecraft.client.renderer.GlStateManager.*
-import net.minecraft.entity.player.EntityPlayer
+import net.ccbluex.liquidbounce.features.value.*
+import net.ccbluex.liquidbounce.utils.render.RenderUtils
+import net.minecraft.client.entity.EntityOtherPlayerMP
 import net.minecraft.network.play.server.S14PacketEntity
-import net.minecraft.util.AxisAlignedBB
-import org.lwjgl.opengl.GL11.*
+import net.minecraft.util.Vec3
 import java.awt.Color
 import java.util.*
-import kotlin.collections.HashMap
+import java.util.concurrent.ConcurrentHashMap
 
-class Backtrack2 : Module("Backtrack2", category = ModuleCategory.COMBAT) {
+class BackTrack2 : Module("BackTrack2", category = ModuleCategory.COMBAT) {
 
-    private val modeValue = ListValue("Mode", arrayOf("Legacy", "Modern"), "Legacy")
-    private val espModeValue = ListValue("ESPMode", arrayOf("None", "Box", "Wireframe"), "Box")
-    private val styleValue = ListValue("Style", arrayOf("Smooth", "Pulse"), "Smooth")
-    private val smartValue = BoolValue("Smart", true)
-    private val maxTicksValue = IntegerValue("MaxTicks", 10, 1, 40)
-    private val maxDelayValue = IntegerValue("MaxDelay", 250, 50, 1000) // ms
+    private val mode = ListValue("Mode", arrayOf("Legacy", "Modern"), "Modern")
 
-    private val backtrackMap = HashMap<Int, MutableList<BacktrackPos>>()
+    private val nextBacktrackDelay = IntegerValue("NextBacktrackDelay", 0, 0, 10000)
+    private val minDelay = IntegerValue("MinDelay", 80, 0, 10000)
+    private val maxDelay = IntegerValue("MaxDelay", 120, 0, 10000)
+    private val style = ListValue("Style", arrayOf("Pulse", "Smooth"), "Smooth")
+    private val smart = BoolValue("Smart", true)
+    private val distance = FloatValue("Distance", 3.0f, 0.0f, 8.0f)
+    private val espMode = ListValue("ESPMode", arrayOf("None", "Box", "Model", "Wireframe"), "Box")
+    private val wireframeWidth = FloatValue("WireframeWidth", 1f, 0.5f, 8f)
+    private val espColor = ColorValue("ESPColor", Color(0, 255, 0).rgb)
 
-    data class BacktrackPos(val x: Double, val y: Double, val z: Double, val timestamp: Long)
+    private val legacyPos = ListValue("CachingMode", arrayOf("ClientPos", "ServerPos"), "ClientPos")
+    private val maxCachedPositions = IntegerValue("MaxCachedPositions", 10, 1, 20)
 
-@EventTarget
-fun onPacket(event: PacketEvent) {
-    if (!state) return
-    if (event.packet !is S14PacketEntity) return
+    private val cache = ConcurrentHashMap<Int, MutableList<Vec3>>()
+    private val timeCache = ConcurrentHashMap<Int, Long>()
 
-    val packet = event.packet as S14PacketEntity
-    val entityIdField = S14PacketEntity::class.java.getDeclaredField("entityId")
-    entityIdField.isAccessible = true
-    val entityId = entityIdField.getInt(packet)
+    private var nextBacktrackTime = 0L
+    val colorInt = espColor.get()
+    val colorObj = Color(colorInt)
+    
+    @EventTarget
+    fun onUpdate(event: UpdateEvent) {
+        if (!mode.get().equals("Modern", true)) return
 
-    val entity = mc.theWorld.getEntityByID(entityId)
-    if (entity !is EntityPlayer || entity === mc.thePlayer) return
+        val now = System.currentTimeMillis()
+        if (now < nextBacktrackTime) return
 
+        for (entity in mc.theWorld.playerEntities) {
+            if (entity is EntityOtherPlayerMP && entity != mc.thePlayer) {
+                if (smart.get() && !entity.isEntityAlive) continue
+                if (mc.thePlayer.getDistanceToEntity(entity) > distance.get()) continue
 
-        val list = backtrackMap.getOrPut(entity.entityId) { mutableListOf() }
-
-        val smart = smartValue.get()
-        val dist = mc.thePlayer.getDistanceToEntity(entity)
-
-        if (!smart || dist >= 1.5f) {
-            list.add(BacktrackPos(entity.posX, entity.posY, entity.posZ, System.currentTimeMillis()))
+                val id = entity.entityId
+                val list = cache.getOrPut(id) { mutableListOf() }
+                val vec = Vec3(entity.posX, entity.posY, entity.posZ)
+                list.add(0, vec)
+                if (list.size > maxCachedPositions.get())
+                    list.removeAt(list.size - 1)
+                timeCache[id] = now
+            }
         }
 
-        when (modeValue.get().lowercase()) {
-            "legacy" -> {
-                if (list.size > maxTicksValue.get()) {
-                    list.removeAt(0)
-                }
-            }
+        val randomDelay = minDelay.get() + Random().nextInt(maxDelay.get() - minDelay.get() + 1)
+        nextBacktrackTime = now + randomDelay + nextBacktrackDelay.get()
+    }
 
-            "modern" -> {
-                val cutoff = System.currentTimeMillis() - maxDelayValue.get()
-                list.removeIf { it.timestamp < cutoff }
-            }
+    @EventTarget
+    fun onPacket(event: PacketEvent) {
+        if (!mode.get().equals("Legacy", true)) return
+        val packet = event.packet
+        if (packet is S14PacketEntity) {
+            val entity = packet.getEntity(mc.theWorld) as? EntityOtherPlayerMP ?: return
+            val entityID = entity.entityId
+            val list = cache.getOrPut(entityID) { mutableListOf() }
+            val vec = Vec3(entity.posX, entity.posY, entity.posZ)
+            list.add(0, vec)
+            if (list.size > maxCachedPositions.get())
+                list.removeAt(list.size - 1)
         }
     }
 
     @EventTarget
     fun onRender3D(event: Render3DEvent) {
-        if (!state) return
+        if (espMode.get() == "None") return
+        val renderColor = (espColor.get() as java.awt.Color).rgb
 
-        val esp = espModeValue.get().lowercase()
-        if (esp == "none") return
+        for ((id, positions) in cache) {
+            val entity = mc.theWorld?.getEntityByID(id) as? EntityOtherPlayerMP ?: continue
+            if (!entity.isEntityAlive || positions.isEmpty()) continue
 
-        glPushMatrix()
-        glEnable(GL_BLEND)
-        glDisable(GL_TEXTURE_2D)
-        glDisable(GL_DEPTH_TEST)
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
-
-        if (esp == "wireframe") {
-            glPolygonMode(GL_FRONT_AND_BACK, GL_LINE)
-            glLineWidth(2f)
-        }
-
-        val style = styleValue.get().lowercase()
-        val now = System.currentTimeMillis()
-        val maxDelay = maxDelayValue.get()
-
-        for ((_, list) in backtrackMap) {
-            val renderList = when (style) {
-                "pulse" -> list.takeLast(1)
-                "smooth" -> list
-                else -> emptyList()
-            }
-
-            for (pos in renderList) {
-                if (modeValue.get().equals("modern", true)) {
-                    val age = now - pos.timestamp
-                    if (age > maxDelay) continue
-                }
-
-                val x = pos.x - mc.renderManager.renderPosX
-                val y = pos.y - mc.renderManager.renderPosY
-                val z = pos.z - mc.renderManager.renderPosZ
-
-                val box = AxisAlignedBB(x - 0.3, y, z - 0.3, x + 0.3, y + 1.8, z + 0.3)
-                drawBox(box, Color(0, 255, 100, 100))
+            for (vec in positions) {
+                RenderUtils.drawEntityBox(entity, colorObj, false)
             }
         }
-
-        if (esp == "wireframe") {
-            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL)
-        }
-
-        glEnable(GL_DEPTH_TEST)
-        glEnable(GL_TEXTURE_2D)
-        glDisable(GL_BLEND)
-        glPopMatrix()
-    }
-
-    private fun drawBox(box: AxisAlignedBB, color: Color) {
-        val r = color.red / 255f
-        val g = color.green / 255f
-        val b = color.blue / 255f
-        val a = color.alpha / 255f
-
-        glColor4f(r, g, b, a)
-        glBegin(GL_LINE_LOOP)
-        glVertex3d(box.minX, box.minY, box.minZ)
-        glVertex3d(box.maxX, box.minY, box.minZ)
-        glVertex3d(box.maxX, box.minY, box.maxZ)
-        glVertex3d(box.minX, box.minY, box.maxZ)
-        glEnd()
-
-        glBegin(GL_LINE_LOOP)
-        glVertex3d(box.minX, box.maxY, box.minZ)
-        glVertex3d(box.maxX, box.maxY, box.minZ)
-        glVertex3d(box.maxX, box.maxY, box.maxZ)
-        glVertex3d(box.minX, box.maxY, box.maxZ)
-        glEnd()
     }
 
     override fun onDisable() {
-        backtrackMap.clear()
+        cache.clear()
+        timeCache.clear()
     }
-
-    override val tag: String
-        get() = modeValue.get()
 }

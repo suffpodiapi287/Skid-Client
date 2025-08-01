@@ -271,7 +271,7 @@ try {
         int categoryTabsWidth = this.guiWidth - 160 - 3;
         RenderUtils.drawRect((float)categoryTabsX, (float)tabY, (float)(categoryTabsX + categoryTabsWidth), (float)(tabY + 26), BACKGROUND_COLOR.getRGB());
         ModuleCategory[] categories = new ModuleCategory[]{ModuleCategory.COMBAT, ModuleCategory.MOVEMENT, ModuleCategory.MISC, ModuleCategory.PLAYER, ModuleCategory.RENDER, ModuleCategory.CLIENT, ModuleCategory.WORLD};
-        String[] categoryNames = new String[]{"COMBAT", "MOVEMENT", "OTHER", "PLAYER", "RENDER", "CLIENT", "WORLD"};
+        String[] categoryNames = new String[]{"COMBAT", "MOVEMENT", "PLAYER", "RENDER", "CLIENT", "WORLD", "EXPLOIT", "MISC"};
         int tabsStartX = this.guiX + 160;
         int availableWidth = this.guiWidth - 160;
         int tabCount = categoryNames.length;
