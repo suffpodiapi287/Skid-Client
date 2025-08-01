@@ -28,9 +28,6 @@ public class Fonts {
 
     public static TTFFontRenderer fontVerdana;
 
-    @FontDetails(fontName = "Roboto Medium", fontSize = 35)
-    public static GameFontRenderer font35;
-
     @FontDetails(fontName = "Roboto Medium", fontSize = 40)
     public static GameFontRenderer font40;
 
@@ -416,4 +413,15 @@ public class Fonts {
             return new Font("default", Font.PLAIN, size);
         }
     }
+
+    @FontDetails(fontName = "Roboto Medium", fontSize = 35)
+    public static GameFontRenderer font35;
+    static {
+    try {
+        font35 = new GameFontRenderer(getFont("Roboto-Medium.ttf", 35));
+    } catch (Exception e) {
+        e.printStackTrace();
+        font35 = null;
+    }
+}
 }

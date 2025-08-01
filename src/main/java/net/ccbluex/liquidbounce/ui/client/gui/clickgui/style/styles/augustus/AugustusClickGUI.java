@@ -270,7 +270,7 @@ try {
         int categoryTabsX = this.guiX + 160;
         int categoryTabsWidth = this.guiWidth - 160 - 3;
         RenderUtils.drawRect((float)categoryTabsX, (float)tabY, (float)(categoryTabsX + categoryTabsWidth), (float)(tabY + 26), BACKGROUND_COLOR.getRGB());
-        ModuleCategory[] categories = new ModuleCategory[]{ModuleCategory.COMBAT, ModuleCategory.MOVEMENT, ModuleCategory.MISC, ModuleCategory.PLAYER, ModuleCategory.RENDER, ModuleCategory.CLIENT, ModuleCategory.WORLD};
+        ModuleCategory[] categories = new ModuleCategory[]{ModuleCategory.COMBAT, ModuleCategory.MOVEMENT, ModuleCategory.PLAYER, ModuleCategory.RENDER, ModuleCategory.CLIENT, ModuleCategory.WORLD, ModuleCategory.EXPLOIT, ModuleCategory.MISC,};
         String[] categoryNames = new String[]{"COMBAT", "MOVEMENT", "PLAYER", "RENDER", "CLIENT", "WORLD", "EXPLOIT", "MISC"};
         int tabsStartX = this.guiX + 160;
         int availableWidth = this.guiWidth - 160;
@@ -687,4 +687,3 @@ try {
         return false;
     }
 }
-

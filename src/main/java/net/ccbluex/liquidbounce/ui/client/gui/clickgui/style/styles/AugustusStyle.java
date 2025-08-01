@@ -49,4 +49,3 @@ extends Style {
         Fonts.font35.drawString(moduleElement.getModule().getName(), moduleElement.getX() + 5, moduleElement.getY() + 5, moduleTextColor.getRGB());
     }
 }
-
