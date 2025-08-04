@@ -45,6 +45,15 @@ import kotlin.math.roundToInt
 @ElementInfo(name = "Targets")
 open class Targets : Element(-46.0, -40.0, 1F, Side(Side.Horizontal.MIDDLE, Side.Vertical.MIDDLE)) {
 
+
+     companion object {
+        lateinit var INSTANCE: Targets
+    }
+
+    init {
+        INSTANCE = this
+    }
+    
     // Style settings
     private val styleDisplay = BoolValue("Style Options:", true)
     val modeValue = ListValue("Mode", arrayOf("FDP", "Bar", "Chill", "ChillLite", "Vape", "Stitch", "Rice", "Slowly", "Remix", "Astolfo", "Astolfo2", "Liquid", "Flux", "Rise", "Exhibition", "ExhibitionOld", "Zamorozka", "Arris", "Tenacity", "Tenacity5", "WaterMelon", "SparklingWater"), "Slowly").displayable { styleDisplay.get() }
@@ -471,7 +480,7 @@ open class Targets : Element(-46.0, -40.0, 1F, Side(Side.Horizontal.MIDDLE, Side
         Fonts.font35.drawString("Distance: ${decimalFormat.format(mc.thePlayer.getDistanceToEntityBox(target))}", 36, 15, 0xffffff)
 
         // Draw info
-        RenderUtils.drawHead(target.skin, 2, 2, 30, 30)
+        RenderUtils.drawHead(target.skin, 2, 2, 30, 30, Color(255, 255, 255).rgb);
         val playerInfo = mc.netHandler.getPlayerInfo(target.uniqueID)
         if (playerInfo != null) {
             Fonts.font35.drawString("Ping: ${playerInfo.responseTime.coerceAtLeast(0)}",
@@ -1115,7 +1124,7 @@ open class Targets : Element(-46.0, -40.0, 1F, Side(Side.Horizontal.MIDDLE, Side
         GL11.glPopMatrix()
 
         // Draw head
-        RenderUtils.drawHead(target.skin, 2, 2, 16, 16)
+        RenderUtils.drawHead(target.skin, 2, 2, 16, 16, Color(255, 255, 255).rgb);
     }
 
     private fun drawArris(target: EntityLivingBase) {
@@ -1130,7 +1139,7 @@ open class Targets : Element(-46.0, -40.0, 1F, Side(Side.Horizontal.MIDDLE, Side
             RenderUtils.drawRect(0f, 1f, 45f + additionalWidth, 40f, Color(0, 0, 0, 110).rgb)
         }
 
-        RenderUtils.drawHead(target.skin, 5, 5, 30, 30)
+        RenderUtils.drawHead(target.skin, 5, 5, 30, 30, Color(255, 255, 255).rgb);
 
         // info text
         font.drawString(target.name, 40, 5, Color.WHITE.rgb)

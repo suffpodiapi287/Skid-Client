@@ -28,7 +28,10 @@ public class Fonts {
 
     public static TTFFontRenderer fontVerdana;
 
-    @FontDetails(fontName = "Roboto Medium", fontSize = 40)
+    @FontDetails(fontName = "Urbanist", fontSize = 35)
+    public static GameFontRenderer font35;
+
+    @FontDetails(fontName = "Urbanist", fontSize = 40)
     public static GameFontRenderer font40;
 
     @FontDetails(fontName = "Roboto Medium", fontSize = 72)
@@ -111,6 +114,12 @@ public class Fonts {
     @FontDetails(fontName = "TenacityIcon30", fontSize = 30)
     public static GameFontRenderer fontTenacityIcon30;
 
+    @FontDetails(fontName="UrbanistSemiBold", fontSize=35)
+    public static GameFontRenderer font35SemiBold;
+
+    @FontDetails(fontName="UrbanistSemiBold", fontSize=40)
+    public static GameFontRenderer font40SemiBold;
+
     //fontTenacity35  fontTenacityBold35
 
     private static final List<GameFontRenderer> CUSTOM_FONT_RENDERERS = new ArrayList<>();
@@ -120,8 +129,8 @@ public class Fonts {
 
         ClientUtils.INSTANCE.logInfo("Loading Fonts.");
 
-        font35 = new GameFontRenderer(getFont("Roboto-Medium.ttf", 35));
-        font40 = new GameFontRenderer(getFont("Roboto-Medium.ttf", 40));
+        font35 = new GameFontRenderer(Fonts.getFontcustom(35, "Urbanist-Medium.ttf"));
+        font40 = new GameFontRenderer(Fonts.getFontcustom(40, "Urbanist-Medium.ttf"));
         font72 = new GameFontRenderer(getFont("Roboto-Medium.ttf", 72));
         fontSmall = new GameFontRenderer(getFont("Roboto-Medium.ttf", 30));
         fontTiny = new GameFontRenderer(getFont("Roboto-Medium.ttf", 24));
@@ -152,7 +161,8 @@ public class Fonts {
         fontTenacityIcon30 = new GameFontRenderer(getFontcustom(30, "Tenacityicon"));
         fontTenacity40 = new GameFontRenderer(getFontcustom(40,"tenacity"));
         fontTenacityBold40 = new GameFontRenderer(getFontcustom(40,"tenacity-bold"));
-
+        font35SemiBold = new GameFontRenderer(Fonts.getFontcustom(35, "Urbanist-SemiBold"));
+        font40SemiBold = new GameFontRenderer(Fonts.getFontcustom(40, "Urbanist-SemiBold"));
 
         getCustomFonts();
 
@@ -413,15 +423,4 @@ public class Fonts {
             return new Font("default", Font.PLAIN, size);
         }
     }
-
-    @FontDetails(fontName = "Roboto Medium", fontSize = 35)
-    public static GameFontRenderer font35;
-    static {
-    try {
-        font35 = new GameFontRenderer(getFont("Roboto-Medium.ttf", 35));
-    } catch (Exception e) {
-        e.printStackTrace();
-        font35 = null;
-    }
-}
 }

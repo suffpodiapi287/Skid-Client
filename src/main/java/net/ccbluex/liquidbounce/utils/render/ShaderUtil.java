@@ -9,7 +9,8 @@ import net.ccbluex.liquidbounce.utils.MinecraftInstance;
 import net.ccbluex.liquidbounce.utils.FileUtils;
 import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.util.ResourceLocation;
-
+import net.ccbluex.liquidbounce.utils.render.shader.shaders.RoundedRectShader;
+import java.awt.Color;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -140,6 +141,10 @@ public class ShaderUtil extends MinecraftInstance {
         int loc = glGetUniformLocation(programID, name);
         if (args.length > 1) glUniform2i(loc, args[0], args[1]);
         else glUniform1i(loc, args[0]);
+    }
+
+    public static void drawRoundedRect(float x, float y, float x2, float y2, float radius, float shadow, Color color) {
+        RoundedRectShader.INSTANCE.draw(x, y, x2, y2, radius, shadow, color);
     }
 
     public static void drawQuads(float x, float y, float width, float height) {

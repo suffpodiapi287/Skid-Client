@@ -31,8 +31,8 @@ class WaterMark : Module("WaterMark", category = ModuleCategory.RENDER) {
             -1
         }
 
-        val iconFont = Fonts.font40 ?: return
-        val infoFont = Fonts.font35 ?: return
+        val iconFont = mc.fontRendererObj ?: return
+        val infoFont = mc.fontRendererObj ?: return
 
         val iconText = "R"
         val infoText = "$username | ${fps}fps | ${ping}ms"
@@ -63,11 +63,18 @@ class WaterMark : Module("WaterMark", category = ModuleCategory.RENDER) {
         )
 
         // Draw "R"
-        val iconBoxX = x + padding
-        val iconBoxY = y + (height - iconBoxSize) / 2f
-        val rX = iconBoxX + (iconBoxSize - iconFont.getStringWidth(iconText)) / 2f
-        val rY = iconBoxY + (iconBoxSize - iconFont.FONT_HEIGHT) / 2f + 1f
-        iconFont.drawString(iconText, rX, rY, Color(150, 150, 255).rgb, true)
+    val logoTexture = ResourceLocation("fdpclient/textures/gui/logo.png")
+    val iconBoxX = x + padding
+    val iconBoxY = y + (height - iconBoxSize) / 2f
+    mc.textureManager.bindTexture(logoTexture)
+    GlStateManager.enableBlend()
+    net.ccbluex.liquidbounce.utils.render.RenderUtils.drawImage(
+        logoTexture,
+        iconBoxX.toInt(),
+        iconBoxY.toInt(),
+        iconBoxSize.toInt(),
+        iconBoxSize.toInt()
+)
 
         // Draw info
         val textX = iconBoxX + iconBoxSize + spacing

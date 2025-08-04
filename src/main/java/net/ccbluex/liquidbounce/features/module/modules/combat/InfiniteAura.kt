@@ -72,6 +72,14 @@ class InfiniteAura : Module(name = "InfiniteAura", category = ModuleCategory.COM
         thread?.stop()
     }
 
+     companion object {
+        lateinit var INSTANCE: InfiniteAura
+    }
+     
+     init {
+        INSTANCE = this
+    }
+    
     @EventTarget
     fun onUpdate(event: UpdateEvent) {
         if (!timer.hasTimePassed(getDelay().toLong())) return

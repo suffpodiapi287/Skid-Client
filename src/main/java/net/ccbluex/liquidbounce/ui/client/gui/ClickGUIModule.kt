@@ -71,7 +71,10 @@ object ClickGUIModule : Module(name = "ClickGUI", category = ModuleCategory.CLIE
     val colorRedValue = IntegerValue("R", 0, 0, 255).displayable { !colorRainbow.get() } as IntegerValue
     val colorGreenValue = IntegerValue("G", 160, 0, 255).displayable { !colorRainbow.get() } as IntegerValue
     val colorBlueValue = IntegerValue("B", 255, 0, 255).displayable { !colorRainbow.get() } as IntegerValue
+    
+    @JvmField
     val fastRenderValue = BoolValue("FastRender", false)
+    
     val getClosePrevious = BoolValue("ClosePrevious", false)
     val disp = BoolValue("DisplayValue", true)
 

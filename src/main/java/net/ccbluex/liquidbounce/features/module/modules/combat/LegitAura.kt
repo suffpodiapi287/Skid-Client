@@ -49,7 +49,7 @@ class LegitAura : Module(name = "LegitAura", category = ModuleCategory.COMBAT) {
      */
 
     // CPS
-    private val maxCPS: IntegerValue = object : IntegerValue("MaxCPS", 8, 1, 20) {
+    private val maxCPS: IntegerValue = object : IntegerValue("MaxCPS", 8, 1, 40) {
         override fun onChanged(oldValue: Int, newValue: Int) {
             val i = minCPS.get()
             if (i > newValue) set(i)
@@ -58,7 +58,7 @@ class LegitAura : Module(name = "LegitAura", category = ModuleCategory.COMBAT) {
         }
     }
 
-    private val minCPS: IntegerValue = object : IntegerValue("MinCPS", 5, 1, 20) {
+    private val minCPS: IntegerValue = object : IntegerValue("MinCPS", 5, 1, 40) {
         override fun onChanged(oldValue: Int, newValue: Int) {
             val i = maxCPS.get()
             if (i < newValue) set(i)
@@ -103,7 +103,7 @@ class LegitAura : Module(name = "LegitAura", category = ModuleCategory.COMBAT) {
     private val rotTest = BoolValue("rotTest", false).displayable { rotations.equals("Down") }
 
     private val priorityValue = ListValue("Priority", arrayOf("Health", "Distance", "Direction", "LivingTime", "Armor", "HurtResistance", "HurtTime", "HealthAbsorption", "RegenAmplifier"), "Distance")
-    public val rangeModeValue = ListValue("RangeMode", arrayOf("None", "Universocraft", "UniversocraftHvH", "Verus"), "None")
+    public val rangeModeValue = ListValue("RangeMode", arrayOf("None", "3fmc", "Universocraft", "UniversocraftHvH", "Verus"), "None")
     private val autoconfig = BoolValue("AutoConfiguration", false).displayable { rangeModeValue.equals("Universocraft") }
 
     val targetModeValue = ListValue("TargetMode", arrayOf("Single", "Switch", "Multi"), "Switch")
@@ -553,6 +553,22 @@ class LegitAura : Module(name = "LegitAura", category = ModuleCategory.COMBAT) {
 
             }
 
+            "3fmc" -> {
+                if (mc.thePlayer.ticksExisted % 13 < 10) {
+                    rangeValue.set(3.1)
+                    failRateValue.set(3)
+
+                }
+                if (mc.thePlayer.ticksExisted % 55 < 10) {
+                    rangeValue.set(3.2)
+                    failRateValue.set(5)
+                }
+                if (mc.thePlayer.ticksExisted % 70 < 10) {
+                    rangeValue.set(3.3)
+                    mc.thePlayer.ticksExisted = 0
+                    failRateValue.set(7)
+                }
+            }
             "universocraft" -> {
                 if (mc.thePlayer.ticksExisted % 13 < 10) {
                     rangeValue.set(2.85)

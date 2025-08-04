@@ -36,6 +36,8 @@ import java.util.*
 import kotlin.concurrent.thread
 
 object FDPClient {
+    
+    val notification: NotificationManager = NotificationManager()
 
     // Client information
     const val CLIENT_NAME = "FDPClient+++"

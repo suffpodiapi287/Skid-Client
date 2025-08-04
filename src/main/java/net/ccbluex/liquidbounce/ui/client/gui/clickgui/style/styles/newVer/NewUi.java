@@ -127,8 +127,8 @@ public class NewUi extends GuiScreen {
         for (CategoryElement ce : categoryElements) {
             ce.drawLabel(mouseX, mouseY, 30F, startY, 200F, elementHeight);
             if (ce.getFocused()) {
-                startYAnim = ClickGUIModule.INSTANCE.getFastRenderValue().get() ? startY + 6F : AnimationUtils.animate(startY + 6F, startYAnim, (startYAnim - (startY + 5F) > 0 ? 0.65F : 0.55F) * RenderUtils.deltaTime * 0.025F);
-                endYAnim = ClickGUIModule.INSTANCE.getFastRenderValue().get() ? startY + elementHeight - 6F : AnimationUtils.animate(startY + elementHeight - 6F, endYAnim, (endYAnim - (startY + elementHeight - 5F) < 0 ? 0.65F : 0.55F) * RenderUtils.deltaTime * 0.025F);
+                startYAnim = ClickGUIModule.fastRenderValue.get() ? startY + 6F : AnimationUtils.animate(startY + 6F, startYAnim, (startYAnim - (startY + 5F) > 0 ? 0.65F : 0.55F) * RenderUtils.deltaTime * 0.025F);
+                endYAnim = ClickGUIModule.fastRenderValue.get() ? startY + elementHeight - 6F : AnimationUtils.animate(startY + elementHeight - 6F, endYAnim, (endYAnim - (startY + elementHeight - 5F) < 0 ? 0.65F : 0.55F) * RenderUtils.deltaTime * 0.025F);
 
                 ce.drawPanel(mouseX, mouseY, 230, 50, width - 260, height - 80, Mouse.getDWheel(), accentColor);
             }

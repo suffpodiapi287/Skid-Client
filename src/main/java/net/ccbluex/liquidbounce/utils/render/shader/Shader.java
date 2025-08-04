@@ -19,7 +19,20 @@ public abstract class Shader extends MinecraftInstance {
     private int program;
 
     private Map<String, Integer> uniformsMap;
-
+    
+    public static void drawQuad(float x, float y, float width, float height) {
+        GL11.glBegin((int)7);
+        GL11.glTexCoord2f((float)0.0f, (float)0.0f);
+        GL11.glVertex2d((double)x, (double)(y + height));
+        GL11.glTexCoord2f((float)1.0f, (float)0.0f);
+        GL11.glVertex2d((double)(x + width), (double)(y + height));
+        GL11.glTexCoord2f((float)1.0f, (float)1.0f);
+        GL11.glVertex2d((double)(x + width), (double)y);
+        GL11.glTexCoord2f((float)0.0f, (float)1.0f);
+        GL11.glVertex2d((double)x, (double)y);
+        GL11.glEnd();
+    }
+    
     public Shader(final String fragmentShader) {
         int vertexShaderID, fragmentShaderID;
 

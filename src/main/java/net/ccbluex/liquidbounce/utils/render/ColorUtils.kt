@@ -15,11 +15,21 @@ import kotlin.math.abs
 import kotlin.math.ceil
 import kotlin.math.max
 import kotlin.math.min
+import org.lwjgl.opengl.GL11
 
 object ColorUtils {
 
     private val COLOR_PATTERN = Pattern.compile("(?i)§[0-9A-FK-OR]")
     private val startTime = System.currentTimeMillis()
+    
+    @JvmStatic
+    fun setColour(colour: Int) {
+        val a = (colour shr 24 and 0xFF) / 255.0f
+        val r = (colour shr 16 and 0xFF) / 255.0f
+        val g = (colour shr 8 and 0xFF) / 255.0f
+        val b = (colour and 0xFF) / 255.0f
+        GL11.glColor4f(r, g, b, a)
+    }
 
     @JvmField
     val hexColors = IntArray(16)

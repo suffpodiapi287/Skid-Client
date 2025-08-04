@@ -10,11 +10,14 @@ import net.ccbluex.liquidbounce.features.module.modules.render.KillESP;
 import net.ccbluex.liquidbounce.injection.access.StaticStorage;
 import net.ccbluex.liquidbounce.ui.font.Fonts;
 import net.ccbluex.liquidbounce.utils.MinecraftInstance;
+import net.ccbluex.liquidbounce.utils.render.ColorUtils;
 import net.ccbluex.liquidbounce.utils.block.BlockUtils;
 import net.ccbluex.liquidbounce.utils.misc.Animation;
 import net.ccbluex.liquidbounce.utils.particles.Particle;
 import net.ccbluex.liquidbounce.utils.particles.Vec3;
 import net.ccbluex.liquidbounce.utils.render.shader.Shader;
+import net.ccbluex.liquidbounce.features.module.modules.client.Interface;
+import net.ccbluex.liquidbounce.utils.render.ShaderUtil;
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
@@ -42,7 +45,7 @@ import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.util.glu.GLU;
-
+import net.minecraft.client.entity.EntityPlayerSP;
 import java.awt.*;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
@@ -1250,6 +1253,49 @@ public final class RenderUtils extends MinecraftInstance {
 
         glEnd();
     }
+    public static void drawBloomRoundedRect(float paramXStart, float paramYStart, float paramXEnd, float paramYEnd, float radius, float radius2, float shadow, Color color, ShaderBloom bloom) {
+        Color color1 = color;
+        if (shadow > 8.0f) {
+            shadow = 8.0f;
+        }
+        if (bloom == ShaderBloom.BLOOMONLY && color.getAlpha() == 255 && !Interface.INSTANCE.getBloomValue().get().booleanValue()) {
+            color1 = new Color(color.getRed(), color.getGreen(), color.getBlue(), 127);
+        }
+        if (!((Boolean)Interface.INSTANCE.getShaderValue().get()).booleanValue() || !Interface.INSTANCE.getBloomValue().get().booleanValue()) {
+            RenderUtils.drawRoundedRect(paramXStart, paramYStart, paramXEnd, paramYEnd, radius, color1.getRGB(), true);
+            return;
+        }
+        switch (bloom) {
+            case BLOOMONLY: {
+                ShaderUtil.drawRoundedRect(paramXStart, paramYStart, paramXEnd, paramYEnd, radius2, shadow, color);
+                break;
+            }
+            case ROUNDONLY: {
+                RenderUtils.drawRoundedRect(paramXStart, paramYStart, paramXEnd, paramYEnd, radius, color.getRGB(), true);
+                break;
+            }
+            case BOTH: {
+                ShaderUtil.drawRoundedRect(paramXStart - shadow, paramYStart - shadow, paramXEnd + shadow, paramYEnd + shadow, radius2, shadow, color1);
+                RenderUtils.drawRoundedRect(paramXStart, paramYStart, paramXEnd, paramYEnd, radius, color1.getRGB(), true);
+            }
+        }
+    }
+    
+    public static void renderItemIcon(int x, int y, ItemStack itemStack) {
+    if (itemStack != null && itemStack.getItem() != null) {
+        GlStateManager.pushMatrix();
+        GlStateManager.disableLighting();
+        GlStateManager.enableBlend();
+        GlStateManager.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
+        RenderHelper.enableGUIStandardItemLighting();
+        Minecraft.getMinecraft().getRenderItem().renderItemAndEffectIntoGUI(itemStack, x, y);
+        GlStateManager.enableLighting();
+        GlStateManager.disableBlend();
+        RenderHelper.disableStandardItemLighting();
+        GlStateManager.popMatrix();
+    }
+}
+
     public static void drawBlockBox(final BlockPos blockPos, final Color color, final boolean outline, final boolean box, final float outlineWidth) {
         final RenderManager renderManager = mc.getRenderManager();
         final Timer timer = mc.timer;
@@ -2582,14 +2628,18 @@ public final class RenderUtils extends MinecraftInstance {
         tessellator.draw();
     }
 
-    public static void drawHead(ResourceLocation skin, int x, int y, int width, int height) {
-        GL11.glColor4f(1F, 1F, 1F, 1F);
-        mc.getTextureManager().bindTexture(skin);
-        RenderUtils.drawScaledCustomSizeModalRect(x, y, 8F, 8F, 8, 8, width, height,
-                64F, 64F);
-        RenderUtils.drawScaledCustomSizeModalRect(x, y, 40F, 8F, 8, 8, width, height,
-                64F, 64F);
-    }
+    public static void drawHead(ResourceLocation skin, int x, int y, int width, int height, int color) {
+    float a = (float)(color >> 24 & 0xFF) / 255.0f;
+    float r = (float)(color >> 16 & 0xFF) / 255.0f;
+    float g = (float)(color >> 8 & 0xFF) / 255.0f;
+    float b = (float)(color & 0xFF) / 255.0f;
+    GlStateManager.enableBlend();
+    GlStateManager.color(r, g, b, a);
+    mc.getTextureManager().bindTexture(skin);
+    RenderUtils.drawScaledCustomSizeModalRect(x, y, 8.0f, 8.0f, 8, 8, width, height, 64.0f, 64.0f);
+    RenderUtils.drawScaledCustomSizeModalRect(x, y, 40.0f, 8.0f, 8, 8, width, height, 64.0f, 64.0f);
+    GlStateManager.disableBlend();
+}
 
     public static void quickDrawBorderedRect(final float x, final float y, final float x2, final float y2, final float width, final int color1, final int color2) {
         quickDrawRect(x, y, x2, y2, color2);
@@ -2773,4 +2823,282 @@ public static void drawSmoothRoundedRect(float x, float y, float right, float bo
     GL11.glDisable(GL11.GL_BLEND);
     GL11.glPopAttrib();
 }
+
+public static void drawBox(double x, double y, double z, double maxX, double maxY, double maxZ, int color) {
+    float a = (color >> 24 & 255) / 255F;
+    float r = (color >> 16 & 255) / 255F;
+    float g = (color >> 8 & 255) / 255F;
+    float b = (color & 255) / 255F;
+
+    GlStateManager.pushMatrix();
+    GlStateManager.enableBlend();
+    GlStateManager.disableTexture2D();
+    GlStateManager.disableDepth();
+    GlStateManager.depthMask(false);
+    GlStateManager.color(r, g, b, a);
+
+    Tessellator tessellator = Tessellator.getInstance();
+    WorldRenderer buffer = tessellator.getWorldRenderer();
+    buffer.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION);
+
+    // Bottom
+    buffer.pos(x, y, z).endVertex();
+    buffer.pos(maxX, y, z).endVertex();
+    buffer.pos(maxX, y, maxZ).endVertex();
+    buffer.pos(x, y, maxZ).endVertex();
+    // Top
+    buffer.pos(x, maxY, z).endVertex();
+    buffer.pos(maxX, maxY, z).endVertex();
+    buffer.pos(maxX, maxY, maxZ).endVertex();
+    buffer.pos(x, maxY, maxZ).endVertex();
+    // Front
+    buffer.pos(x, y, z).endVertex();
+    buffer.pos(maxX, y, z).endVertex();
+    buffer.pos(maxX, maxY, z).endVertex();
+    buffer.pos(x, maxY, z).endVertex();
+    // Back
+    buffer.pos(x, y, maxZ).endVertex();
+    buffer.pos(maxX, y, maxZ).endVertex();
+    buffer.pos(maxX, maxY, maxZ).endVertex();
+    buffer.pos(x, maxY, maxZ).endVertex();
+    // Left
+    buffer.pos(x, y, z).endVertex();
+    buffer.pos(x, y, maxZ).endVertex();
+    buffer.pos(x, maxY, maxZ).endVertex();
+    buffer.pos(x, maxY, z).endVertex();
+    // Right
+    buffer.pos(maxX, y, z).endVertex();
+    buffer.pos(maxX, y, maxZ).endVertex();
+    buffer.pos(maxX, maxY, maxZ).endVertex();
+    buffer.pos(maxX, maxY, z).endVertex();
+
+    tessellator.draw();
+    GlStateManager.depthMask(true);
+    GlStateManager.enableDepth();
+    GlStateManager.enableTexture2D();
+    GlStateManager.disableBlend();
+    GlStateManager.popMatrix();
+}
+
+public static void drawLineToEntity(Entity entity, Color color) {
+    Minecraft mc = Minecraft.getMinecraft();
+    RenderManager renderManager = mc.getRenderManager();
+    EntityPlayerSP player = mc.thePlayer;
+
+    double x = entity.lastTickPosX + (entity.posX - entity.lastTickPosX) * mc.timer.renderPartialTicks - renderManager.renderPosX;
+    double y = entity.lastTickPosY + (entity.posY - entity.lastTickPosY) * mc.timer.renderPartialTicks - renderManager.renderPosY;
+    double z = entity.lastTickPosZ + (entity.posZ - entity.lastTickPosZ) * mc.timer.renderPartialTicks - renderManager.renderPosZ;
+
+    double eyeHeight = player.getEyeHeight();
+
+    GlStateManager.pushMatrix();
+    GlStateManager.disableTexture2D();
+    GlStateManager.disableDepth();
+    GlStateManager.enableBlend();
+    GlStateManager.color(color.getRed() / 255F, color.getGreen() / 255F, color.getBlue() / 255F, color.getAlpha() / 255F);
+    GL11.glLineWidth(1.5F);
+
+    GL11.glBegin(GL11.GL_LINES);
+    GL11.glVertex3d(0, eyeHeight, 0);
+    GL11.glVertex3d(x, y, z);
+    GL11.glEnd();
+
+    GlStateManager.enableTexture2D();
+    GlStateManager.enableDepth();
+    GlStateManager.disableBlend();
+    GlStateManager.popMatrix();
+}
+
+public static void drawHealthBar(EntityLivingBase entity) {
+    Minecraft mc = Minecraft.getMinecraft();
+    RenderManager renderManager = mc.getRenderManager();
+
+    double x = entity.lastTickPosX + (entity.posX - entity.lastTickPosX) * mc.timer.renderPartialTicks - renderManager.renderPosX;
+    double y = entity.lastTickPosY + (entity.posY - entity.lastTickPosY) * mc.timer.renderPartialTicks - renderManager.renderPosY;
+    double z = entity.lastTickPosZ + (entity.posZ - entity.lastTickPosZ) * mc.timer.renderPartialTicks - renderManager.renderPosZ;
+
+    float healthPercent = entity.getHealth() / entity.getMaxHealth();
+    double height = entity.height + 0.5;
+
+    GlStateManager.pushMatrix();
+    GlStateManager.translate(x, y + height, z);
+    GlStateManager.rotate(-renderManager.playerViewY, 0F, 1F, 0F);
+    GlStateManager.scale(-0.03F, -0.03F, 0.03F);
+    GlStateManager.disableTexture2D();
+    GlStateManager.disableDepth();
+
+    // Background
+    GL11.glBegin(GL11.GL_QUADS);
+    GL11.glColor4f(0.2F, 0.2F, 0.2F, 1F);
+    GL11.glVertex2f(-20, 0);
+    GL11.glVertex2f(20, 0);
+    GL11.glVertex2f(20, 4);
+    GL11.glVertex2f(-20, 4);
+    // Health bar
+    GL11.glColor4f(1F - healthPercent, healthPercent, 0F, 1F);
+    GL11.glVertex2f(-20, 0);
+    GL11.glVertex2f(-20 + 40 * healthPercent, 0);
+    GL11.glVertex2f(-20 + 40 * healthPercent, 4);
+    GL11.glVertex2f(-20, 4);
+    GL11.glEnd();
+
+    GlStateManager.enableDepth();
+    GlStateManager.enableTexture2D();
+    GlStateManager.popMatrix();
+}
+
+public static void drawOutline(float left, float top, float right, float bottom, int color) {
+    drawRect(left, top, right, top + 1, color); // Top
+    drawRect(left, bottom - 1, right, bottom, color); // Bottom
+    drawRect(left, top, left + 1, bottom, color); // Left
+    drawRect(right - 1, top, right, bottom, color); // Right
+}
+
+public static enum ShaderBloom {
+        BLOOMONLY,
+        ROUNDONLY,
+        BOTH;
+
+    }
+
+    public static void drawRoundedGradientRectCorner(float x, float y, float x1, float y1, float radius, int color, int color2, int color3, int color4) {
+        int i;
+        ColorUtils.setColour(-1);
+        GL11.glEnable((int)3042);
+        GL11.glDisable((int)3553);
+        GL11.glBlendFunc((int)770, (int)771);
+        GL11.glEnable((int)2848);
+        GL11.glShadeModel((int)7425);
+        GL11.glPushAttrib((int)0);
+        GL11.glScaled((double)0.5, (double)0.5, (double)0.5);
+        x = (float)((double)x * 2.0);
+        y = (float)((double)y * 2.0);
+        x1 = (float)((double)x1 * 2.0);
+        y1 = (float)((double)y1 * 2.0);
+        GL11.glEnable((int)3042);
+        GL11.glDisable((int)3553);
+        ColorUtils.setColour(color);
+        GL11.glEnable((int)2848);
+        GL11.glShadeModel((int)7425);
+        GL11.glBegin((int)6);
+        for (i = 0; i <= 90; i += 3) {
+            GL11.glVertex2d((double)((double)(x + radius) + Math.sin((double)i * Math.PI / 180.0) * (double)radius * -1.0), (double)((double)(y + radius) + Math.cos((double)i * Math.PI / 180.0) * (double)radius * -1.0));
+        }
+        ColorUtils.setColour(color2);
+        for (i = 90; i <= 180; i += 3) {
+            GL11.glVertex2d((double)((double)(x + radius) + Math.sin((double)i * Math.PI / 180.0) * (double)radius * -1.0), (double)((double)(y1 - radius) + Math.cos((double)i * Math.PI / 180.0) * (double)radius * -1.0));
+        }
+        ColorUtils.setColour(color3);
+        for (i = 0; i <= 90; i += 3) {
+            GL11.glVertex2d((double)((double)(x1 - radius) + Math.sin((double)i * Math.PI / 180.0) * (double)radius), (double)((double)(y1 - radius) + Math.cos((double)i * Math.PI / 180.0) * (double)radius));
+        }
+        ColorUtils.setColour(color4);
+        for (i = 90; i <= 180; i += 3) {
+            GL11.glVertex2d((double)((double)(x1 - radius) + Math.sin((double)i * Math.PI / 180.0) * (double)radius), (double)((double)(y + radius) + Math.cos((double)i * Math.PI / 180.0) * (double)radius));
+        }
+        GL11.glEnd();
+        GL11.glEnable((int)3553);
+        GL11.glDisable((int)3042);
+        GL11.glDisable((int)2848);
+        GL11.glDisable((int)3042);
+        GL11.glEnable((int)3553);
+        GL11.glScaled((double)2.0, (double)2.0, (double)2.0);
+        GL11.glPopAttrib();
+        GL11.glEnable((int)3553);
+        GL11.glDisable((int)3042);
+        GL11.glDisable((int)2848);
+        GL11.glShadeModel((int)7424);
+        ColorUtils.setColour(-1);
+    }
+
+    public static void drawRoundedOutline(float x, float y, float x1, float y1, float radius, float lineWidth, int colour) {
+        int i;
+        GL11.glPushAttrib((int)0);
+        GL11.glScaled((double)0.5, (double)0.5, (double)0.5);
+        x = (float)((double)x * 2.0);
+        y = (float)((double)y * 2.0);
+        x1 = (float)((double)x1 * 2.0);
+        y1 = (float)((double)y1 * 2.0);
+        GL11.glEnable((int)3042);
+        GL11.glDisable((int)3553);
+        ColorUtils.setColour(colour);
+        GL11.glEnable((int)2848);
+        GL11.glLineWidth((float)lineWidth);
+        GL11.glBegin((int)2);
+        for (i = 0; i <= 90; i += 3) {
+            GL11.glVertex2d((double)((double)(x + radius) + Math.sin((double)i * Math.PI / 180.0) * (double)radius * -1.0), (double)((double)(y + radius) + Math.cos((double)i * Math.PI / 180.0) * (double)radius * -1.0));
+        }
+        for (i = 90; i <= 180; i += 3) {
+            GL11.glVertex2d((double)((double)(x + radius) + Math.sin((double)i * Math.PI / 180.0) * (double)radius * -1.0), (double)((double)(y1 - radius) + Math.cos((double)i * Math.PI / 180.0) * (double)radius * -1.0));
+        }
+        for (i = 0; i <= 90; i += 3) {
+            GL11.glVertex2d((double)((double)(x1 - radius) + Math.sin((double)i * Math.PI / 180.0) * (double)radius), (double)((double)(y1 - radius) + Math.cos((double)i * Math.PI / 180.0) * (double)radius));
+        }
+        for (i = 90; i <= 180; i += 3) {
+            GL11.glVertex2d((double)((double)(x1 - radius) + Math.sin((double)i * Math.PI / 180.0) * (double)radius), (double)((double)(y + radius) + Math.cos((double)i * Math.PI / 180.0) * (double)radius));
+        }
+        GL11.glEnd();
+        GL11.glEnable((int)3553);
+        GL11.glDisable((int)3042);
+        GL11.glDisable((int)2848);
+        GL11.glDisable((int)3042);
+        GL11.glEnable((int)3553);
+        GL11.glScaled((double)2.0, (double)2.0, (double)2.0);
+        GL11.glPopAttrib();
+        GL11.glLineWidth((float)1.0f);
+        GlStateManager.color((float)1.0f, (float)1.0f, (float)1.0f, (float)1.0f);
+    }
+
+    public static void drawRoundedGradientOutlineCorner(float x, float y, float x1, float y1, float width, float radius, int color, int color2, int color3, int color4) {
+        int i;
+        ColorUtils.setColour(-1);
+        GL11.glEnable((int)3042);
+        GL11.glDisable((int)3553);
+        GL11.glBlendFunc((int)770, (int)771);
+        GL11.glEnable((int)2848);
+        GL11.glShadeModel((int)7425);
+        GL11.glPushAttrib((int)0);
+        GL11.glScaled((double)0.5, (double)0.5, (double)0.5);
+        x = (float)((double)x * 2.0);
+        y = (float)((double)y * 2.0);
+        x1 = (float)((double)x1 * 2.0);
+        y1 = (float)((double)y1 * 2.0);
+        GL11.glEnable((int)3042);
+        GL11.glDisable((int)3553);
+        ColorUtils.setColour(color);
+        GL11.glEnable((int)2848);
+        GL11.glShadeModel((int)7425);
+        GL11.glLineWidth((float)width);
+        GL11.glBegin((int)2);
+        for (i = 0; i <= 90; i += 3) {
+            GL11.glVertex2d((double)((double)(x + radius) + Math.sin((double)i * Math.PI / 180.0) * (double)radius * -1.0), (double)((double)(y + radius) + Math.cos((double)i * Math.PI / 180.0) * (double)radius * -1.0));
+        }
+        ColorUtils.setColour(color2);
+        for (i = 90; i <= 180; i += 3) {
+            GL11.glVertex2d((double)((double)(x + radius) + Math.sin((double)i * Math.PI / 180.0) * (double)radius * -1.0), (double)((double)(y1 - radius) + Math.cos((double)i * Math.PI / 180.0) * (double)radius * -1.0));
+        }
+        ColorUtils.setColour(color3);
+        for (i = 0; i <= 90; i += 3) {
+            GL11.glVertex2d((double)((double)(x1 - radius) + Math.sin((double)i * Math.PI / 180.0) * (double)radius), (double)((double)(y1 - radius) + Math.cos((double)i * Math.PI / 180.0) * (double)radius));
+        }
+        ColorUtils.setColour(color4);
+        for (i = 90; i <= 180; i += 3) {
+            GL11.glVertex2d((double)((double)(x1 - radius) + Math.sin((double)i * Math.PI / 180.0) * (double)radius), (double)((double)(y + radius) + Math.cos((double)i * Math.PI / 180.0) * (double)radius));
+        }
+        GL11.glEnd();
+        GL11.glLineWidth((float)1.0f);
+        GL11.glEnable((int)3553);
+        GL11.glDisable((int)3042);
+        GL11.glDisable((int)2848);
+        GL11.glDisable((int)3042);
+        GL11.glEnable((int)3553);
+        GL11.glScaled((double)2.0, (double)2.0, (double)2.0);
+        GL11.glPopAttrib();
+        GL11.glEnable((int)3553);
+        GL11.glDisable((int)3042);
+        GL11.glDisable((int)2848);
+        GL11.glShadeModel((int)7424);
+        ColorUtils.setColour(-1);
+    }
+
 }

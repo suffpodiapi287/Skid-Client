@@ -45,9 +45,10 @@ import java.util.*
 import kotlin.math.*
 
 class KillAura : Module(name = "KillAura", category = ModuleCategory.COMBAT, keyBind = Keyboard.KEY_G) {
-    /**
-     * OPTIONS
-     */
+    
+    companion object {
+    lateinit var INSTANCE: KillAura
+}
 
     private val attackDisplay = BoolValue("Attack Options:", true)
     // CPS
@@ -97,7 +98,7 @@ class KillAura : Module(name = "KillAura", category = ModuleCategory.COMBAT, key
             if (maxRange > newValue) set(maxRange)
         }
     }.displayable { attackDisplay.get() } as FloatValue
-    private val discoverRangeValue = FloatValue("DiscoverRange", 6f, 0f, 8f).displayable { attackDisplay.get() }
+    val discoverRangeValue: FloatValue = FloatValue("DiscoverRange", 6f, 1f, 8f).displayable { attackDisplay.get() } as FloatValue
 
     private val hitselectValue = BoolValue("Hitselect", false).displayable { attackDisplay.get() }
     private val hitselectRangeValue = FloatValue("HitselectRange", 2.7f, 2f, 4f).displayable { attackDisplay.get() }
@@ -335,6 +336,7 @@ class KillAura : Module(name = "KillAura", category = ModuleCategory.COMBAT, key
      * Enable kill aura module
      */
     override fun onEnable() {
+        INSTANCE = this
         mc.thePlayer ?: return
         mc.theWorld ?: return
         lastCanBeSeen = false

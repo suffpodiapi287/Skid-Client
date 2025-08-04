@@ -51,6 +51,18 @@ import kotlin.math.*
 
 class Scaffold : Module(name = "Scaffold", category = ModuleCategory.WORLD, keyBind = Keyboard.KEY_V) {
     
+   companion object {
+    @JvmField
+    val INSTANCE = Scaffold()
+}
+
+    @get:JvmName("getPlaceTick")
+    @set:JvmName("setPlaceTick")
+    var placeTick: Int = 0
+
+    @get:JvmName("getBlockAmount")
+    @set:JvmName("setBlockAmount")
+    var blockAmount: Int = 0
     // Block place
     private val placeOptions = BoolValue("Placement Options: ", true)
     
@@ -1290,4 +1302,6 @@ class Scaffold : Module(name = "Scaffold", category = ModuleCategory.WORLD, keyB
 
     override val tag: String
         get() = if (towerStatus) { "Tower" } else { "Normal" }
+
 }
+
